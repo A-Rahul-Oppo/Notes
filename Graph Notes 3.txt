@@ -1,0 +1,190 @@
+L14. Cycle Detection in Directed Graph using BFS (Kahn's Algorithm):
+
+Use Kahn's topological sort algorithm, if it was able to generate, then the graph is not cyclic, else graph is cyclic
+
+
+bool isCyclic(int N, vector<int> adj[]){
+	
+	queue<int> q;
+	vector<int> indegree(N, 0);
+	
+	for(int i=0;i<N;i++)
+		for(auto it: adj[i])
+			indegree[it]++;
+	
+	for(int i=0;i<N;i++)
+		if(indegree[i]==0)
+			q.push(i);
+	
+	int cnt= 0;
+	while(!q.empty()){
+		int node= q.front();
+		q.pop();
+		cnt++;
+		
+		for(auto it: adj[node]){
+			indegree[it]--;
+			if(indegree[it]==0){
+				q.push(it);
+			}
+		}
+	}
+	
+	if(cnt==N)
+		return false;
+	return true;
+}
+
+
+
+
+
+
+L15. Shortest Path in Undirected Graph with Unit Weights:
+
+void BFS(vector<int> adj[], int N, int src){
+	
+	vector<int> dist(N, INT_MAX);
+	queue<int> q;
+	
+	dist[src]= 0;
+	q.push(src);
+	
+	while(q.empty()==false){
+		int node= q.front();
+		q.pop();
+		
+		for(auto it: adj[node]){
+			if(dist[node]+1<dist[it]){
+				dist[it]= dist[node]+1;
+				q.push(it);
+			}
+		}
+	}
+	
+	for(int i=0;i<N;i++)
+		cout<<dist[i]<<" ";
+	cout<<endl;
+}
+
+// TC= O(n+E), SC= O(n)+O(n)
+
+
+
+
+
+
+L16. Shortest Path in a Weighted Directed Acyclic Graph (DAG):
+
+// DFS for finding Topo Sort
+// BFS for finding Shortest Path
+
+
+void findTopoSort(int node, vector<int> &vis, stack<int> &st, vector<pair<int, int>> adj[]){
+	vis[node]= 1;
+	
+	for(auto it: adj[node])
+		if(!vis[it.first])
+			findTopoSort(it.first, vis, st, adj);
+	
+	st.push(node);
+}
+
+void shortestPath(int src, int N, vector<pair<int, int>> adj[]){
+	
+	vector<int> vis(N, 0);
+	stack<int> st;
+	for(int i=0;i<N;i++)
+		if(!vis[i])
+			findTopoSort(i, vis, st, adj);
+	
+	vector<int> dist(N, INT_MAX);
+	dist[src]= 0;
+	
+	while(!st.empty(){
+		int node= st.top();
+		st.pop();
+		
+		if(dist[node]!=INT_MAX)
+			for(auto it: adj[node])
+				if(dist[node]+it.second<dist[it.first])
+					dist[it.first]= dist[node]+it.second;
+	}
+	
+	for(int i=0;i<N;i++)
+		(dist[i]==INT_MAX)? cout<<"INF ": cout<<dist[i]<<" ";
+}
+
+int main(){
+	int n, m;
+	cin>>n>>m;
+	vector<pair<int, int>> adj[n];
+	for(int i=0;i<m;i++){
+		int u, v, wt;
+		cin>>u>>v>>wt;
+		adj[u].push_back({v, wt});
+	}
+	
+	shortestPath(0, n, adj);
+	
+	return 0;
+}
+
+// TC= O(n+E)+O(n+E), SC= O(n)+O(n)
+
+
+
+
+
+
+L17. Dijkstra's Algorithms (Shortest Path in Undirected Graphs):
+
+Everyone having a question regarding the need of Priority Queue. The fact is that even without a Priority Queue, the algorithm will work absolutely fine, Priority Queue is just an optimizing technique here, as it always returns the minimum distance, hence we would have already figured the minimum distance of a node with least comparisons, greatly reducing the time complexity. Otherwise, if we were to use a normal Queue, we might find the shorter distance to a node in later checks. Hope you got the point!
+
+
+int main(){
+	int n, m, source;
+	cin>>n>>m;
+	vector<pair<int, int>> g[n+1]; // 1-indexed adjacency list for graph
+	
+	int a, b, wt;
+	for(int i=0;i<m;i++){
+		cin>>a>>b>>wt;
+		g[a].push_back({b, wt});
+		g[b].push_back({a, wt});
+	}
+	
+	cin>>source;
+	
+	// Dijkstra's algorithm begins from here
+	priority_queue<pair<int, int>, vector<pair<int, int>>, greater<pair<int, int>> pq; // min-heap, In pair=> (dist, from)
+	vector<int> distTo(n+1, INT_MAX);
+	
+	distTo[source]= 0;
+	pq.push(make_pair(0, source)); // (dist, from)
+	
+	while(!pq.empty()){
+		int dist= pq.top().first;
+		int prev= pq.top().second;
+		pq.pop();
+		
+		vector<pair<int, int>>::iterator it;
+		for(it= g[prev].begin();it!=g[prev].end();it++){
+			int next= it->first;	
+			int nextDist= it->second;
+			if(distTo[next]>distTo[prev]+nextDist){
+				distTo[next]= distTo[prev]+nextDist;
+				pq.push(make_pair(distTo[next], next));
+			}
+		}
+	}
+	
+	cout<<"The distances from source, "<<source<<" are: \n";
+	for(int i=1;i<=n;i++)
+		cout<<distTo[i]<<" ";
+	cout<<"\n";
+	
+	return 0;
+}
+
+// TC= O((n+E)log(n)) (O(nlog(n))), SC= O(n)+O(n)

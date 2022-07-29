@@ -1,0 +1,217 @@
+L23. Kruskal's Algorithm:
+
+struct node{
+	int u, v, wt;
+	node(int first, int second, int weight){
+		u= first;
+		v= second;
+		wt= weight;
+	}
+};
+
+bool comp(node a, node b){
+	return a.wt<b.wt;
+}
+
+int findPar(int u, vector<int> &parent){
+	if(u==parent[u])
+		return u;
+	return findPar(parent[u], parent);
+}
+
+void union(int u, int v, vector<int> &parent, vector<int> &rank){
+	u= findPar(u);
+	v= findPar(v);
+	
+	if(rank[u]<rank[v])
+		parent[u]= v;
+	else if(rank[v]<rank[u])
+		parent[v]= u;
+	else{
+		parent[v]= u;
+		rank[u]++;
+	}
+}
+
+int main(){
+	int N, m;
+	cin>>N>>m;
+	vector<node> edges;
+	
+	for(int i=0;i<m;i++){
+		int u, v, wt;
+		cin>>u>>v>>wt;
+		edges.push_back(node(u, v, wt));
+	}
+	
+	sort(edges.begin(), edges.end(), comp);
+	
+	vector<int> parent(N);
+	vector<int> rank(N, 0);
+	for(int i=0i<N;i++)
+		parent[i]= i;
+	
+	int cost= 0;
+	vector<pair<int, int>> mst;
+	for(auto it: edges){
+		if(findPar(it.v, parent)!=findPar(it.u, parent)){
+			cost+= it.wt;
+			mst.push_back({it.u, it.v});
+			union(it.u, it.v, parent, rank);
+		}
+	}
+	
+	cout<<cost<<endl;
+	for(auto it: mst)
+		cout<<it.first<<" - "<<it.second<<endl;
+	return 0;
+}
+
+// TC= O(m*log(m))+O(m*O(4*alpha)) ~ O(m*log(m)), SC= O(m)+O(n)+O(n) ~ O(n)
+
+
+
+
+
+
+L24. Bridges in Graph (Cut Edge):
+
+Bridges: Those edges on whose removal, the graph is broken into 2 or more number of components
+
+
+void dfs(int node, int parent, vector<int> &vis, vector<int> &tin, vector<int> &low, int &timer, vector<int> adj[]){
+	
+	vis[node]= 1;
+	tin[node]= low[node]= timer++;
+	
+	for(auto it: adj[node]){
+		if(it==parent) continue;
+		
+		if(!vis[it]){
+			dfs(it, node, vis, tin, low, timer, adj);
+			low[node]= min(low[node], low[it]);
+			if(low[it]>tin[node]){
+				// bridge is printed
+				cout<<node<<" "<<it<<endl;
+			}
+		}
+		else{
+			low[node]= min(low[node], tin[it]);
+		}
+	}
+}
+
+int main(){
+	int n, m;
+	cin>>n>>m;
+	vector<int> adj[n];
+	for(int i=0;i<n;i++){
+		int u, v;
+		cin>>u>>v;
+		adj[u].push_back(v);
+		adj[v].push_back(u);
+	}
+	
+	vector<int> tin(n, -1);
+	vector<int> low(n, -1);
+	vector<int> vis(n, 0);
+	
+	int timer= 0;
+	
+	for(int i=0;i<n;i++)
+		if(!vis[i])
+			dfs(i, -1, vis, tin, low, timer, adj);
+	
+	return 0;
+}
+
+// TC= O(n+E), SC= O(n)
+
+
+
+
+
+
+L25. Articulation Point (Cut Vertex):
+
+
+void dfs(int node, int parent, vector<int> &vis, vector<int> &tin, vector<int> &low, int &timer, vector<int> adj[], vector<int> &isArticulation){
+	vis[node]= 1;
+	tin[node]= low[node]= timer++;
+	
+	int child= 0;
+	for(auto it: adj[node]){
+		if(it==parent)
+			continue;
+		
+		if(!vis[it]){
+			dfs(it, node, vis, tin, low, timer, adj, isArticulation);
+			low[node]= min(low[node], low[it]);
+			if(low[it]>=tin[node] && parent!=-1)
+				ifArticulation[node]= 1;
+			child++;
+		}
+		else{
+			low[node]= min(low[node], tin[it]);
+		}
+	}
+	
+	if(parent==-1 && child>1)
+		isArticulation[node]= 1;
+}
+
+int main(){
+	int n, m; cin>>n>>m;
+	vector<int> adj[n];
+	for(int i=0;i<m;i++){
+		int u, v; cin>>u>>v;
+		adj[u].push_back(v);
+		adj[v].push_back(u);
+	}
+	vector<int> tin(n, -1);
+	vector<int> low(n, -1);
+	vector<int> vis(n, 0);
+	vector<int> isArticulation(n, 0);
+	
+	int timer= 0;
+	for(int i=0;i<n;i++)
+		if(!vis[i])
+			dfs(i, -1, vis, tin, low, timer, adj, isArticulation);
+	
+	for(int i=0;i<n;i++)
+		if(isArticulation[i]==1)
+			cout<<i<<endl;
+	
+	return 0;
+}
+
+// TC= O(N+E), SC= O(N)
+
+
+
+
+
+
+L26. Kosaraju's Algorithm for Strongly Connected Components (SCC):
+
+SCC: A component in which if you start from any node, you can reach every other node in that component
+
+
+
+
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

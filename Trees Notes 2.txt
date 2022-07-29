@@ -1,0 +1,428 @@
+L14. Maximum Depth (Height) in Binary Tree:
+
+int maxDepth(TreeNode* root){
+	if(root==NULL) return 0;
+	
+	int lh= maxDepth(root->left);
+
+	int rh= maxDepth(root->right);
+
+	return 1+ max(lh, rh);
+}
+
+Levelorder Traversal Approach for Maximum Depth:
+int maxDepth(TreeNode* root){
+	if(!root) return 0;
+	
+	queue<TreeNode*> q;
+	q.push(root);
+	int depth= 0;
+	while(!q.empty()){
+		int size= q.size();
+		depth++;
+		for(int i=0;i<n;i++){
+			TreeNode* temp= q.front();
+			q.pop();
+			if(temp->left!=NULL) q.push(temp->left);
+			if(temp->right!=NULL) q.push(temp->right);
+		}
+	}
+	return depth;
+}
+
+
+
+
+
+
+L15. Check for Balanced Binary Tree:
+
+Balanced BT: For every node, height(left)-height(right)<=1
+Yes=>height of tree, No=>-1
+
+bool isBalanced(TreeNode* root){
+	return (check(root)!=-1);
+}
+
+int check(TreeNode* root){
+	if(root==NULL) return 0;
+	
+	int lh= check(root->left);
+	if(lh==-1) return -1;
+	int rh= check(root->right);
+	if(rh==-1) return -1;
+
+	if(abs(lh-rh)>1) return -1;
+	return 1+ max(lh, rh);
+}
+
+
+
+
+
+
+L16. Diameter of Binary Tree:
+
+Diameter: Longest path between 2 nodes, and this path does not need to pass via root
+
+int diameterOfBinaryTree(TreeNode* root){
+	int diameter= 0;
+	height(root, diameter);
+	return diameter;
+}
+
+int height(TreeNode* node, int& diameter){
+	if(!node) return 0;
+	
+	int lh= height(node->left, diameter);
+	int rh= height(node->right, diameter);
+	diameter= max(diameter, lh+rh);
+	return 1+ max(lh, rh);
+}
+// TC= O(n), SC= O(n)
+
+
+
+
+
+
+L17. Max Path Sum in Binary Tree:
+
+// On every node, which is the longest path, is what we return
+// and use maxi variable to compute the sum of longest path
+
+int maxPathSum(TreeNode* root){
+	int maxi= INT_MIN;
+	maxPathDown(root, maxi);
+	return maxi;
+}
+
+int maxPathDown(TreeNode* node, int& maxi){
+	if(node==NULL) return 0;
+	int left= max(0, maxPathDown(node->left, maxi));
+	int right= max(0, maxPathDown(node->right, maxi));
+	maxi= max(maxi, left+ right+ node->val);
+	return max(left, right)+ node->val;
+}
+
+
+
+
+
+
+L18. Check if 2 trees are identical:
+
+bool isSameTree(TreeNode* p, TreeNode* q){
+	if(p==NULL || q==NULL)
+		return (p==q);
+	return (p->val==q->val) && isSameTree(p->left, q->left) && isSameTree(p->right, q->right);
+}
+
+
+
+
+
+
+L19. Zig-Zag/Spiral Traversal:
+
+vector<vector<int>> zigzagLevelOrder(
+	vector<vector<int>> result;
+	if(root==NULL) return result;
+	
+	queue<TreeNode*> nodesQueue;
+	nodesQueue.push(root);
+	bool leftToRight= true;
+
+	while(!nodesQueue.empty()){
+		int size= nodeQueue.size();
+		vector<int> row(size);
+		for(int i=0;i<size;i++){
+			TreeNode* node= nodesQueue.front();
+			nodesQueue.pop();
+
+			// find position to fill node's value
+			// true means L->R, and false means R->L
+			int index= (leftToRight)? i: size-1-i;
+
+			row[index]= node->val;
+			if(node->left) nodesQueue.push(node->left);
+			if(node->right) nodesQueue.push(node->right);
+		}
+		// after this level;
+		leftToRight= !leftToRight;
+		result.push_back(row);
+	}
+	return result;
+}
+
+
+
+
+
+
+L20. Boundary Traversal in Binary Tree:
+
+1. Left boundary excluding the leaf
+2. Leaf nodes-> Inorder Traversal
+3. Right boundary in the reverse, excluding the leaf
+
+ 
+bool isLeaf(Node* root){
+	if(!root->left && !root->right)
+		return true;
+	return false;
+}
+
+void addLeftBoundary(Node* root, vector<int> &res){
+	Node* cur= root->left;
+	while(cur){
+		if(!isLeaf(cur)) res.push_back(cur->data);
+		if(cur->left) cur= cur->left;
+		else cur= cur->right;
+	}
+}
+
+void addRightBoundary(Node* root, vector<int> &res){
+	Node* cur= root->right;
+	vector<int> temp;
+	while(cur){
+		if(!isLeaf(cur)) temp.push_back(cur->data);
+		if(cur->right) cur= cur->right;
+		else cur= cur->left;
+	}
+	for(int i=temp.size()-1;i>=0;i--)
+		res.push_back(temp[i]);
+}
+
+void addLeaves(Node* root, vector<int> &res){
+	if(isLeaf(root)){
+		res.push_back(root->data);
+		return;
+	}
+	if(root->left) addLeaves(root->left, res);
+	if(root->right) addLeaves(root->right, res);
+}
+
+vector<int> printBoundary(Node* root){
+	vector<int> res;
+	if(!root) return res;
+	
+	if(!isLeaf(root)) res.push_back(root->data);
+	addLeftBoundary(root, res);
+	addLeaves(root, res);
+	addRightBoundary(root, res);
+	return res;
+}
+
+
+
+
+
+
+L21. Vertical Order Traversal of Binary Tree:
+
+vector<vector<int>> verticalTraversal(TreeNode* root){
+	map<int, map<int, multiset<int>>> nodes;
+	queue<pair<TreeNode*, pair<int, int>>> todo;
+	todo.push({root, {0, 0}});
+	
+	while(!todo.empty()){
+		auto p= todo.front();
+		todo.pop();
+		TreeNode* node= p.first;
+		int x= p.second.first, y= p.second.second;
+		nodes[x][y].insert(node->val);
+		if(node->left)
+			todo.push({node->left, {x-1, y+1}});
+		if(node->right)
+			todo.push({node->right, {x+1, y+1}});
+	}
+
+	vector<vector<int>> ans;
+	for(auto p: nodes){
+		vector<int> col;
+		for(auto a: p.second)
+			col.insert(col.end(), q.second.begin(), q.second.end());
+		ans.push_back(col);
+	}
+	return ans;
+}
+
+
+
+Vertical Traversal using Inorder Traversal:
+void inOrder(TreeNode* root, int x, int level, map<int, map<int, multiset<int>>> &map){
+	if(root==NULL) return;
+	inOrder(root->left, x-1, level+1, map);
+	map[x][level].insert(root->val);
+	inOrder(root->right, x+1, level+1, map);
+}
+
+vector<vector<int>> verticalTraversal(TreeNode* root){
+	if(root==NULL) return {};
+	map<int, map<int, multiset<int>>> map;
+	inOrder(root, 0, 0, map);
+	
+	vector<vector<int>> ans;
+	for(auto it: map){
+		vector<int> col;
+		for(auto p: it.second)
+			col.insert(col.end(), p.second.begin(), p.second.end());
+		ans.push_back(col);
+	}
+	return ans;
+}
+// TC= O(n), SC= O(n)
+
+
+
+
+
+
+L22. Top View of Binary Tree:
+
+vector<int> topView(Node* root){
+	vector<int> ans;
+	if(root==NULL) return ans;
+
+	map<int, int> map;
+	queue<pair<Node*, int>> q;
+	q.push({root, 0});
+	while(!q.empty()){
+		auto it= q.front();
+		q.pop();
+		Node* node= it.first();
+		int line= it.second();
+		if(map.find(line)==map.end()) map[line]= node->data;
+		
+		if(node->left!=NULL) q.push({node->left, line-1});
+		if(node->right!=NULL) q.push(node->right, line+1});
+	}
+
+	for(auto it: map)
+		ans.push_back(it.second);
+
+	return ans;
+}
+// TC= O(n), SC= O(n)
+
+
+
+
+
+
+L23. Bottom View of Binary Tree:
+
+vector<int> bottomView(Node* root){
+	vector<int> ans;
+	if(root==NULL) return ans;
+	
+	map<int, int> map;
+	queue<pair<Node*, int>> q;
+	q.push({root, 0});
+	
+	while(!q.empty()){
+		auto it= q.front();
+		q.pop();
+		Node* node= it.first;
+		int line= it.second;
+		map[line]= node->data;
+		
+		if(node->left!=NULL) q.push({node->left, line-1});
+		if(node->right!=NULL) q.push({node->right, line+1});
+	}
+	
+	for(auto it: map)
+		ans.push_back(it.second);
+	return ans;
+}
+// TC= O(n), SC= O(n)
+
+
+
+
+
+
+L24. Right/Left View of Binary Tree:
+
+vector<int> rightSideView(TreeNode* root){
+	vector<int> res;
+	recursion(root, 0, res);
+	return res;
+}
+
+void recursion(TreeNode* root, int level, vector<int> &res){
+	if(root==NULL) return;
+	if(res.size()==level) res.push_back(root->val);
+	recursion(root->right, level+1, res);
+	recursion(root->left, level+1, res);
+}
+
+
+Using Level order Traversal:
+vector<int> rightSideView(TreeNode* root){
+	vector<int> ans;
+	if(root==NULL) return ans;
+	queue<pair<TreeNode*, int>> q;
+	map<int, int> map;
+	q.push({root, 0});
+	
+	while(!q.empty()){
+		int size= q.size();
+		for(int i=0;i<size;i++){
+			TreeNode* node= q.front();
+			q.pop();
+			if(i==size-1) // only insert last element of level in the ans
+				ans.push_back(node->val);
+			if(node->left) q.push({node->left, level+1});
+			if(node->right) q.push({node->right, level+1});
+		}
+	}
+	return ans;
+}
+
+
+OR
+vector<int> rightSideView(TreeNode* root){
+	vector<int> ans;
+	if(root==NULL) return ans;
+	queue<pair<TreeNode*, int>> q;
+	map<int, int> mpp;
+	q.push({root, 0});
+	
+	while(!q.empty()){
+		auto it= q.front();	
+		q.pop();
+		TreeNode* node= it.first;
+		int level= it.second;
+
+		if(mpp.find(level)==mpp.end())
+			mpp[level]= node->val;
+		
+		if(node->right) q.push(node->right, level+1);
+		if(node->left_ q.push(node->left, level+1);
+	}
+	for(auto temp: mpp)
+		ans.push_back(temp.second);
+	return ans;
+}
+
+
+
+
+
+
+L25. Check for Symmetrical Binary Trees:
+
+bool isSymmetric(TreeNode* root){
+	return root==NULL || isSymmetricHelp(root->left, root->right);
+}
+
+bool isSymmetricHelp(TreeNode* left, TreeNode* right){
+	if(left==NULL || right==NULL)
+		return left==right;
+	
+	if(left->val!=right->val) return false;
+
+	return isSymmetricHelp(left->left, right->right) && isSymmetricHelp(left->right, right->left);
+}

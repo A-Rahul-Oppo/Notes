@@ -1,0 +1,280 @@
+L32. Count total Nodes in a COMPLETE Binary Tree:
+
+Complete Binary Tree: Every level, except possibly the last, is completely filled in a complete binary tree, and all nodes in the last level are as left as possible. It can have between 1 and 2^h nodes inclusive at the last level h
+
+int countNodes(TreeNode* root){
+	if(root==NULL) return 0;
+	
+	int lh= findHeightLeft(root);
+	int rh= findHeightRight(root);
+	
+	if(lh==rh) return (1<<lh)-1; // (2^lh)-1
+	
+	return 1+countNodes(root->left)+countNodes(root->right);
+}
+
+int findHeightLeft(TreeNode* root){
+	int height= 0;
+	while(node){
+		height++;
+		node= node->left;
+	}
+	return height;
+}
+
+int findHeightRight(TreeNode* root){
+	int height= 0;
+	while(node){
+		height++;
+		node= node->right;
+	}
+	return height;
+}
+// TC= O(log(n)*log(n)), SC= log(n)
+
+
+
+
+
+
+L33. Requirements needed to construct a Unique Binary Tree:
+
+Can you construct a unique binary tree with the following?
+
+Preorder and Postorder- NO
+Inorder and Preorder- YES
+Inorder and Postorder- YES
+
+
+
+
+
+
+L34. Construct a Binary Tree from Preorder and Inorder Traversal:
+
+TreeNode* buildTree(vector<int> &preorder, vector<int> &inorder){
+	map<int, int> inMap;
+	
+	for(int i=0;i<inorder.size():i++)
+		inMap[inorder[i]]= i;
+	
+	TreeNode* root= buildTree(preorder, 0, preorder.size()-1, inorder, 0, inorder.size()-1, inMap);
+	return root;
+}
+
+TreeNode* buildTree(vector<int> &preorder, int preStart, int preEnd, vector<int> &inorder, int inStart, int inEnd, map<int, int> inMap){
+	if(preStart>preEnd || inStart>inEnd)
+		return NULL;
+	
+	TreeNode* root= new TreeNode(preorder[preStart]);
+	
+	int inRoot= inMap[root->val];
+	int numsLeft= inRoot-inStart;
+	
+	root->left= buildTree(preorder, preStart+1, preStart+numsLeft, inorder, inStart, inRoot-1, inMap);
+	root->right= buildTree(preorder, preStart+numsLeft+1, preEnd, inorder, inRoot+1, inEnd, inMap);
+	
+	return root;
+}
+// TC= O(n), SC= O(n)
+
+
+
+
+
+
+L35. Construct a Binary Tree from Postorder and Inorder Traversal:
+
+TreeNode* buildTree(vector<int> &inorder, vector<int> &postorder){
+	if(inorder.size()!=postorder.size())
+		return NULL;
+	
+	map<int, int> hm;
+	for(int i=0;i<inorder.size();i++)
+		hm[inorder[i]]= i;
+	
+	return buildTreePostIn(inorder, 0, inorder.size()-1, postorder, 0, postorder.size()-1, hm);
+}
+
+TreeNode* buildTreePostIn(vector<int> &inorder, int is, int ie, vector<int> &postorder, int ps, int pe, map<int, int> &hm){
+	if(ps>pe || is>ie)
+		return NULL;
+	
+	TreeNode* root= new TreeNode(postorder[pe]);
+	
+	int inRoot= hm[postorder[pe]];
+	int numsLeft= inRoot-is;
+	
+	root->left= buildTreePostIn(inorder, is, inRoot-1, postorder, ps, ps+numsLeft-1, hm);
+	root->right= buildTreePostIn(inorder, inRoot+1, ie, postorder, ps+numsLeft, pe-1, hm);
+
+	return root;
+}
+// TC= O(n), SC= O(n)
+
+
+
+
+
+
+L36. Serialize and De-serialize Binary Tree:
+
+// Encodes a tree to a single string
+string serialize(TreeNode* root){
+	if(!root) return "";
+	
+	string s= "";
+	queue<TreeNode*> q;
+	q.push(root);
+	while(!q.empty()){
+		TreeNode* curNode= q.front();
+		q.pop();
+		if(curNode==NULL) s.append("#,");
+		else s.append(to_string(curNode->val)+',');
+		if(curNode!=NULL){
+			q.push(curNode->left);
+			q.push(curNode->right);
+		}
+	}
+	cout<<s<<endl;
+	return s;
+}
+// TC= O(n), SC= O(n)
+
+// Decodes your encoded data to tree
+TreeNode* deserialize(string data){
+	if(data.size()==0) return NULL;
+	
+	stringstream s(data);
+	string str;
+	getline(s, str, ',');
+	
+	TreeNode* root= new TreeNode(stoi(str));
+	queue<TreeNode*> q;
+	q.push(root);
+	
+	while(!q.empty()){
+		TreeNode* node= q.front();	
+		q.pop();
+		
+		getline(s, str, ',');
+		if(str=="#"){
+			node->left= NULL;
+		}
+		else{
+			TreeNode* leftNode= new TreeNode(stoi(str));
+			node->left= leftNode;
+			q.push(leftNode);
+		}
+		
+		getline(s, str, ',');
+		if(str=="#"){
+			node->left= NULL;
+		}
+		else{
+			TreeNode* rightNode= new TreeNode(stoi(str));
+			node->right= rightNode;
+			q.push(rightNode);
+		}
+	}
+	return root;
+}
+// TC= O(n), SC= (n)
+
+
+
+
+
+
+L37. Morris Traversal:
+
+Self notes:
+Inorder Morris Traversal:
+🌳 1st case: If left is null, print current node and go right
+🌳 2nd case: Before going left, make right most node on left subtree connected to current node, then go left
+🌳 3rd case: If thread is already pointed to current node, then remove the thread
+
+vector<int> getInorder(TreeNode* root){
+	vector<int> inorder;
+	TreeNode* cur= root;
+	while(cur!=NULL){
+		if(cur->left==NULL){
+			inorder.push_back(cur->val);
+			cur= cur->right;
+		}
+		else{
+			TreeNode* prev= cur->left;
+			while(prev->right && prev->right!=cur){
+				prev= prev->right;
+			}
+			if(prev->right==NULL){
+				prev->right= cur;
+				cur= cur->left;
+			}
+			else{
+				prev->right= NULL;
+				inorder.push_back(cur->val);
+				cur= cur->right;
+			}
+		}
+	}
+	return inorder;
+}
+// TC~O(n), SC= O(1)
+
+
+
+
+
+
+L38. Flatten a Binary Tree to Linked List (3 Approaches):
+
+Approach 1:
+
+prev= NULL;
+flatten(node){
+	if(node==NULL)
+		return;
+	flatten(node->right);
+	flatten(node->left);
+	
+	node->right= prev;
+	node->left= NULL;
+	prev= node;
+}
+// TC= O(n), SC= O(n)
+
+
+Approach 2:
+
+st.push(root);
+while(!st.empty()){
+	cur= st.top();
+	st.pop();
+	
+	if(cur->right)
+		st.push(cur->right);
+	if(cur->left)
+		st.push(cur->left);
+	if(!st.empty())
+		cur->right= st.top();
+	cur->left= NULL;
+}
+// TC= O(n), SC= O(n)
+
+
+Approach 3:
+
+cur= root;
+while(cur!=NULL){
+	if(cur->left!=NULL){
+		prev= cur->left;
+		while(prev->right)
+			prev= prev->right;
+		prev->right= cur->right;
+		cur->right= cur->left;
+		cur->left= NULL;
+	}
+	cur= cur->right;
+}
+// TC= O(n), SC= O(1)

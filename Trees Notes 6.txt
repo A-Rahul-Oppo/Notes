@@ -1,0 +1,213 @@
+L46. Check if a Tree is a BST or BT:
+
+bool isValidBST(TreeNode* root){
+	return isValidBST(root, INT_MIN, INT_MAX);
+}
+
+bool isValidBST(TreeNode* root, int minVal, int maxVal){
+	if(root==NULL) return true;
+	if(root->val>=maxVal || root->val<=minVal) return false;
+	return isValidBST(root->left, minVal, root->val) && isValidBST(root->right, root->val, maxVal);
+}
+
+//TC= O(n), SC= (1)
+
+
+
+
+
+
+L47. LCA in Binary Search Tree:
+
+TreeNode* lowestCommonAncestor(TreeNode* root, TreeNode* p, TreeNode* q){
+	if(root==NULL) return NULL;
+	int cur= root->val;
+	if(cur<p->val && cur<q->val)
+		return lowestCommonAncestor(root->right, p, q);
+	if(cur>p->val && cur>q->val)
+		return lowestCommonAncestor(root->left, p, q);
+	return root;
+}
+
+// TC= O(log2(n)) (O(h)), SC= O(1) (Auxillary Space= O(n))
+
+
+
+
+
+
+L48. Construct a BST from a Preorder Traversal:
+
+TreeNode* bstFromPreorder(vector<int> &A){
+	int i=0;
+	return build(A, i, INT_MAX);
+}
+
+TreeNode* build(vector<int> &A, int &i, int bound){ // bound is the upper bound
+	if(i==A.size() || A[i]>bound) return NULL;
+	TreeNode* root= new TreeNode(A[i++]);
+	root->left= build(A, i, root->val);
+	root->right= build(A, i, bound);
+	return root;
+}
+
+// TC= O(n), SC= O(n)
+
+
+
+
+
+
+L49. Inorder Successor/Predecessor in BST:
+
+TreeNode* inorderSuccessor(TreeNode* root, TreeNode* p){
+	TreeNode* successor= NULL;
+	
+	while(root!=NULL){
+		if(p->val>=root->val){
+			root= root->right;
+		}
+		else{
+			successor= root;
+			root= root->left;
+		}
+	}
+	return successor;
+}
+
+
+TreeNode* inorderPredecessor (TreeNode* root, TreeNode* p){
+	TreeNode* predecessor= NULL;
+	while(root!=NULL){
+		if(root->val>=p->val){
+			root= root->left;
+		}
+		else{
+			predecessor= root;
+			root= root->right;
+		}
+	}
+	return predecessor;
+}
+
+// TC= O(log2(n)) (O(h)), SC= O(1)
+
+
+
+
+
+
+L50. Binary Search Tree Iterator:
+
+// Definition for a binary tree node
+struct TreeNode{
+	int val;
+	TreeNode* left;
+	TreeNode* right;
+	TreeNode(): val(0), left(nullptr), right(nullptr) {}
+	TreeNode(int x): val(x), left(nullptr), right(nullptr) {}
+	TreeNode(int x, TreeNode* left, TreeNode* right): val(x), left(left), right(right) {}
+};
+
+class BSTIterator{
+	
+	private:
+	
+	stack<TreeNode*> myStack;
+	
+	public:
+	
+	BSTIterator(TreeNode* root){
+		pushAll(root);
+	}
+	
+	// return whether we have a next smallest number
+	bool hasNext(){
+		return !myStack.empty();
+	}
+	
+	// return the next smallest number
+	int next(){
+		TreeNode* tmpNode= myStack.top();
+		myStack.pop();
+		pushAll(tempNode->right);
+		return tempNode->val;
+	}
+	
+	private:
+	
+	void pushAll(TreeNode* node){
+		for( ; node!=NULL; myStach.push(node), node= node-<left);
+	}
+};
+
+// TC= O(1), SC= O(log2(n)) (O(h))
+
+
+
+
+
+
+L51. Two Sum in BST (Check if there exists a pair with sum K):
+
+class BSTIterator{
+	stack<TreeNode*> myStack;
+	// reverse= true=> before
+	// reverse= false=> next
+	bool reverse= true;
+	
+	public:
+	
+	BSTIterator(TreeNode* root, bool isReverse){
+		reverse= isReverse;
+		pushAll(root);
+	}
+	
+	// return whether we have a next smallest number
+	bool hasNext(){
+		return !myStack.empty();
+	}
+	
+	// return the next smallest number
+	int next(){
+		TreeNode* tmpNode= myStack.top();
+		myStack.pop();
+		if(!reverse) pushAll(tmpNode->right);
+		else pushAll(tmpNode->left);
+		return tmpNode->val;
+	}
+	
+	private:
+	
+	void pushAll(TreeNode* node){
+		for( ; node!=NULL; ){
+			myStack.push(node);
+			if(reverse==true)
+				node= node->right;
+			else
+				node= node->left;
+		}
+	}
+};
+
+bool findTarget(TreeNode* root, int k){
+	if(!root) return false;
+	
+	// for next
+	BSTIterator l(root, false);
+	// for before
+	BSTIterator r(root, true);
+	
+	int i= l.next();
+	int j= r.next();
+	
+	while(i<j){
+		if(i+j==k) return true;
+		else if(i+j<k) i= l.next();
+		else j= r.next();
+	}
+	
+	return false;
+}
+
+// TC= O(n), SC= O(log2(n)) (O(h))
